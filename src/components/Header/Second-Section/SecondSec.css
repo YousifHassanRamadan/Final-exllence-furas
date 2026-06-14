@@ -1,0 +1,11 @@
+@media only screen and (max-width: 1280px) {
+  .fullWidth {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1280px) and (min-width: 814px) {
+  .quaryFlex {
+    justify-content: end;
+  }
+}

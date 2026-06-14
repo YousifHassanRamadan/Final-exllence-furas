@@ -1,0 +1,11 @@
+@media only screen and (max-width: 1160px) {
+  .fullWidthFirst {
+    width: 100%;
+    justify-content: space-between !important;
+  }
+  .fullWidthIcons {
+    width: 100%;
+    justify-content: space-between !important;
+    margin-top: 10px;
+  }
+}

@@ -1,0 +1,8 @@
+/* editGaps */
+
+@media (max-width: 1288px) and (min-width: 1024px) {
+  .editGaps {
+    row-gap: 15em;
+    margin-left: 2em;
+  }
+}

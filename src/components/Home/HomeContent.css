@@ -1,0 +1,25 @@
+/**1411*/
+
+@media (max-width: 1280px) {
+  .editWidth {
+    width: 100% !important;
+    margin-bottom: 2em;
+  }
+  .editImgMargin {
+    justify-content: center !important;
+  }
+  .editImgWidth {
+    width: 100%;
+    height: 100%;
+  }
+  .editWidthSwiper {
+    width: 100%;
+  }
+}
+@media (max-width: 768px) {
+  .centerSwiper {
+    width: 100%;
+    display: flex !important;
+    justify-content: center !important;
+  }
+}
