@@ -14,14 +14,14 @@ export const addCategory = createAsyncThunk(
     try {
       const response = await axiosClient.post(
         API_ENDPOINTS.ADMIN_ENPOINTS.ADD_CATEGORY,
-        category
+        category,
       );
 
       return response.data; // إرجاع البيانات القادمة من السيرفر
     } catch (error) {
-      return rejectWithValue(error.response || error);
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const addCategorySlice = createSlice({

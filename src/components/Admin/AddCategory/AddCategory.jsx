@@ -36,7 +36,7 @@ const AddCategory = ({ setIscategoryOpen }) => {
   // Validate English input
   const validateEnglishInput = (text) => {
     // Regular expression for English characters
-    const englishRegex = /^[A-Za-z\s]+$/;
+    const englishRegex = /^[A-Za-z\s'\-]+$/;
 
     if (text && !englishRegex.test(text)) {
       return t("english_only");
@@ -56,69 +56,38 @@ const AddCategory = ({ setIscategoryOpen }) => {
     setErrors({ ...errors, english: validateEnglishInput(value) });
   };
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     const trimmedCategoryNameInEng = categoryNameInEnglish.trim();
     const trimmedCategoryNameInAra = categoryNameInArabic.trim();
 
-    // Validate both inputs before submission
     const arabicError = validateArabicInput(trimmedCategoryNameInAra);
     const englishError = validateEnglishInput(trimmedCategoryNameInEng);
 
-    setErrors({
-      arabic: arabicError,
-      english: englishError,
-    });
+    setErrors({ arabic: arabicError, english: englishError });
+
+    if (!trimmedCategoryNameInEng && !trimmedCategoryNameInAra) {
+      return Swal.fire({ icon: "error", text: t("please_enter_both") });
+    }
+    if (!trimmedCategoryNameInEng) {
+      return Swal.fire({ icon: "error", text: t("please_enter_en") });
+    }
+    if (!trimmedCategoryNameInAra) {
+      return Swal.fire({ icon: "error", text: t("please_enter_ar") });
+    }
+    if (arabicError || englishError) return;
 
     const catNameObj = {
       name: trimmedCategoryNameInEng,
       arabicName: trimmedCategoryNameInAra,
     };
 
-    // console.log("catNameObj", catNameObj);
-
-    if (
-      !trimmedCategoryNameInEng ||
-      !trimmedCategoryNameInAra ||
-      arabicError ||
-      englishError
-    ) {
-      if (!trimmedCategoryNameInEng && !trimmedCategoryNameInAra) {
-        Swal.fire({
-          icon: "error",
-          text: t("please_enter_both"),
-        });
-        // console.log("both of them are empty ");
-      }
-
-      if (!trimmedCategoryNameInEng) {
-        Swal.fire({
-          icon: "error",
-          text: t("please_enter_en"),
-        });
-        // console.log("english felid empty ");
-      }
-
-      if (!trimmedCategoryNameInAra) {
-        Swal.fire({
-          icon: "error",
-          text: t("please_enter_ar"),
-        });
-        // console.log("arabic felid empty ");
-      }
-      // console.log("error");
-      return;
+    try {
+      await dispatch(addCategory(catNameObj)).unwrap(); // throws if rejected
+      Swal.fire({ icon: "success", text: t("category_added_success") });
+      setIscategoryOpen(false);
+    } catch (error) {
+      Swal.fire({ icon: "error", text: error });
     }
-
-    // console.log("errors", errors);
-    // console.log("success");
-
-    dispatch(addCategory(catNameObj));
-    Swal.fire({
-      icon: "success",
-      text: t("category_added_success"),
-    });
-    setIscategoryOpen(false);
-    setCategoryName("");
   };
 
   useEffect(() => {

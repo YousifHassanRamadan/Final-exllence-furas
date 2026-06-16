@@ -47,8 +47,7 @@ const SecondSection = () => {
           >
             <span className={`text-[#f8c530] ${isRTL ? "mr-2" : "mr-2"}`}>
               {t("logo_excellence")}
-            </span>{" "}
-            {t("logo_furas")}
+            </span>
           </p>
         </Link>
         {/* End logo */}

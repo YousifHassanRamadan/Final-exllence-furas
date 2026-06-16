@@ -14,7 +14,9 @@ const EditProduct = ({ item, setIsEditOpen }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const { productEdited } = useSelector((state) => state.editProductState);
+  const { productEdited, editLoading } = useSelector(
+    (state) => state.editProductState,
+  );
 
   const { Allcategories } =
     useSelector((state) => state.getCategoryState) || [];
@@ -113,7 +115,7 @@ const EditProduct = ({ item, setIsEditOpen }) => {
     return "";
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newError = {};
     if (!product.title) newError.title = t("product_title_required");
     if (!product.price || product.price <= 0)
@@ -122,17 +124,13 @@ const EditProduct = ({ item, setIsEditOpen }) => {
     if (!product.stock || product.stock < 0) newError.stock = t("stock_min");
     if (!product.category) newError.category = t("select_category");
     if (!product.thumbnail) newError.thumbnail = t("thumbnail_required");
-    if (product.arabicTitle || !product.arabicTitle) {
-      if (validateArabicInput(product.arabicTitle) !== "") {
-        newError.arabicTitle = validateArabicInput(product.arabicTitle);
-      }
+    if (validateArabicInput(product.arabicTitle) !== "") {
+      newError.arabicTitle = validateArabicInput(product.arabicTitle);
     }
-    if (product.arabicDescription || !product.arabicDescription) {
-      if (validateArabicInput(product.arabicDescription) !== "") {
-        newError.arabicDescription = validateArabicInput(
-          product.arabicDescription
-        );
-      }
+    if (validateArabicInput(product.arabicDescription) !== "") {
+      newError.arabicDescription = validateArabicInput(
+        product.arabicDescription,
+      );
     }
 
     if (Object.keys(newError).length > 0) {
@@ -140,7 +138,13 @@ const EditProduct = ({ item, setIsEditOpen }) => {
       return;
     }
 
-    dispatch(editProduct(product));
+    try {
+      await dispatch(editProduct(product)).unwrap();
+      Swal.fire({ icon: "success", text: t("product_edited_success") });
+      setIsEditOpen(false);
+    } catch (error) {
+      Swal.fire({ icon: "error", text: error });
+    }
   };
 
   useEffect(() => {
@@ -379,10 +383,39 @@ const EditProduct = ({ item, setIsEditOpen }) => {
           {/* Submit Button */}
           <Button
             onClick={handleSubmit}
-            className="w-full flex items-center gap-2"
+            className="w-full flex items-center justify-center gap-2"
             color="blue"
+            disabled={editLoading}
           >
-            <Upload size={18} /> {t("edit_product")}
+            {editLoading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                {t("loading")}
+              </>
+            ) : (
+              <>
+                <Upload size={18} /> {t("edit_product")}
+              </>
+            )}
           </Button>
         </div>
       </div>
