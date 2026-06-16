@@ -252,7 +252,6 @@ const Footer = () => {
                     >
                       {t("logo_excellence")}
                     </span>{" "}
-                    <span className="mx-2">{t("logo_furas")}</span>
                     <GiBeachBag
                       style={{
                         color: "#284980",
@@ -328,8 +327,8 @@ const Footer = () => {
           </Typography>
           <Button
             onClick={() => {
-              navigate("/my-account/orders"),
-                window.scrollTo({ top: 0, behavior: "smooth" });
+              (navigate("/my-account/orders"),
+                window.scrollTo({ top: 0, behavior: "smooth" }));
             }}
             startIcon={<ShoppingCartIcon />}
             sx={{
