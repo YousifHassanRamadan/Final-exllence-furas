@@ -7,25 +7,30 @@ const initialState = {
   loading: true,
   error: null,
   status: "idle",
+  totalPages: 1,
+  currentPage: 1,
+  totalProducts: 0,
 };
 
 export const getAllProducts = createAsyncThunk(
   "getAllProducts",
-  async ({ category = "", search = "" } = {}, { rejectWithValue }) => {
+  async (
+    { category = "", search = "", page = 1, limit = 10 } = {},
+    { rejectWithValue },
+  ) => {
     try {
-      let endpoint = `${API_ENDPOINTS.CUSTOMER_ENDPOINTS.GET_PRODUCTS}?sort=true`;
+      let endpoint = `${API_ENDPOINTS.CUSTOMER_ENDPOINTS.GET_PRODUCTS}?sort=true&page=${page}&limit=${limit}`;
 
-      if (category) endpoint += `&category=${category}`;
-      if (search) endpoint += `&search=${search}`;
+      if (category) endpoint += `&category=${encodeURIComponent(category)}`;
+      if (search) endpoint += `&search=${encodeURIComponent(search)}`;
 
-      // إرسال الطلب باستخدام axios
       const response = await axiosClient.get(endpoint);
 
-      return response.data; // ✅ إرجاع البيانات
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const getAllProductsSlice = createSlice({
@@ -36,22 +41,23 @@ const getAllProductsSlice = createSlice({
     builder.addCase(getAllProducts.pending, (state) => {
       state.loading = true;
       state.status = "loading";
-      // console.log("state.status", state.status);
     });
     builder.addCase(getAllProducts.fulfilled, (state, action) => {
       state.loading = false;
       state.Allproducts = action.payload.products;
+      state.totalPages = action.payload.totalPages || 1;
+      state.currentPage = action.payload.currentPage || 1;
+      state.totalProducts = action.payload.totalProducts || 0;
       state.error = null;
       state.status = "success";
-      // console.log("state.status", state.status);
     });
     builder.addCase(getAllProducts.rejected, (state, action) => {
       state.loading = false;
-      state.Allproducts = []; // ✅ تصفير المنتجات عند حدوث خطأ
+      state.Allproducts = [];
+      state.totalPages = 1;
+      state.totalProducts = 0;
       state.error = action.payload;
       state.status = "failed";
-      // console.log("state.error", state.error);
-      // console.log("state.status", state.status);
     });
   },
 });
