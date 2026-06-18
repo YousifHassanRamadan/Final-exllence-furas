@@ -628,5 +628,7 @@
   "zipCode_digits": " يجب أن يتكون الرمز البريدي من 5 أرقام",
   "address_deleted_success": "تم حذف العنوان بنجاح.",
   "password_changed_successfully": "تم تغيير كلمة المرور بنجاح.",
-  "password_change_failed": "فشل في تغيير كلمة المرور. يرجى المحاولة مرة أخرى."
+  "password_change_failed": "فشل في تغيير كلمة المرور. يرجى المحاولة مرة أخرى.",
+  "end_date": "تاريخ الانتهاء",
+  "start_date": "تاريخ البدء"
 }

@@ -21,15 +21,15 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
   const dispatch = useDispatch();
 
   const { variant, loading, error } = useSelector(
-    (state) => state.getProdVariantState
+    (state) => state.getProdVariantState,
   );
 
-  const { isVariantEdited } = useSelector(
-    (state) => state.editProdVariantState
+  const { isVariantEdited, loading: editLoading } = useSelector(
+    (state) => state.editProdVariantState,
   );
 
   const { isVariantDeleted } = useSelector(
-    (state) => state.deleteProdVariantState
+    (state) => state.deleteProdVariantState,
   );
 
   const sizes = ["M", "L", "XL", "2XL", "3XL", "4XL"];
@@ -66,7 +66,7 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
 
   const validationSchema = Yup.object({
     color: Yup.string().required(t("color_required")),
-    size: Yup.string().required(t("size_required")),
+    size: Yup.string().nullable(),
   });
 
   const formik = useFormik({
@@ -75,14 +75,31 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
       size: "",
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       if (!selectedVariant) return;
 
       const updatedVariant = {
         ...values,
         variantId: selectedVariant._id,
       };
-      dispatch(updateProductVariant(updatedVariant));
+
+      try {
+        await dispatch(updateProductVariant(updatedVariant)).unwrap();
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Product variant updated successfully",
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text:
+            error?.data?.message ||
+            error?.message ||
+            "Failed to update product variant",
+        });
+      }
     },
   });
 
@@ -204,7 +221,13 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
               type="submit"
               className="bg-[#284980] text-white py-2 rounded-lg hover:bg-blue-600 transition w-full"
             >
-              {t("update_variant")}
+              {editLoading ? (
+                <div>
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <span>{t("update_variant")}</span>
+              )}
             </button>
           </form>
         </>

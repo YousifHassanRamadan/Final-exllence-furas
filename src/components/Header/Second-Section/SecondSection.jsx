@@ -7,7 +7,7 @@ import SearchBar from "./Search-Bar/SearchBar";
 import { Tooltip, Button } from "@material-tailwind/react";
 import Cart from "./Cart/Cart";
 import "./SecondSec.css";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { LocalStorageUtils } from "../../../utils/localStorageUtils";
@@ -15,9 +15,13 @@ import SearchBarMobile from "./Search-bar-mobile/SearchBarMobile";
 import { fetchFavorites } from "../../../reduxSystem/slices/getFavouriteSlice";
 
 const SecondSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const dispatch = useDispatch();
+
+  const [searchParams] = useSearchParams();
+
+  const language = searchParams?.get("language") || i18n?.language || "en_US";
 
   const { favourites } = useSelector((state) => state.getFavouritestate);
 
@@ -35,7 +39,10 @@ const SecondSection = () => {
     <div className="flex flex-wrap justify-between items-center">
       {/* Start logo */}
       <div className="fullWidth leftSec flex flexWrapQuary justify-between items-center py-5 ">
-        <Link to={"/"} className="icon flex justify-start items-center w-[50%]">
+        <Link
+          to={`/?language=${language}`}
+          className="icon flex justify-start items-center w-[50%]"
+        >
           <GiBeachBag
             aria-label="Logo Icon"
             className="text-white text-6xl cursor-pointer"

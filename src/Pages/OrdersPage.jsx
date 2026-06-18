@@ -13,16 +13,20 @@ import {
   FaCog,
   FaTruck,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserOrders } from "../reduxSystem/slices/getUserOrderSlice";
 import Loader from "../components/loader/Loader";
 
 const OrdersPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useDispatch();
   const { orders, loading } = useSelector((state) => state.ordersUserState);
+
+  const [searchParams] = useSearchParams();
+
+  const language = searchParams?.get("language") || i18n?.language || "en_US";
 
   console.log("orders", orders);
 
@@ -112,7 +116,7 @@ const OrdersPage = () => {
               {t("no_order_made_yet")}
             </p>
             <Link
-              to="/"
+              to={`/?language=${language}`}
               className="bg-[#284980] text-white px-8 py-3 rounded-xl shadow-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105"
             >
               {t("back_to_shop")}
@@ -141,7 +145,7 @@ const OrdersPage = () => {
                     <div className="flex items-center space-x-4">
                       <div
                         className={`px-4 py-2 rounded-full border ${getStatusColor(
-                          order.status
+                          order.status,
                         )} font-medium`}
                       >
                         <div className="flex items-center space-x-2">

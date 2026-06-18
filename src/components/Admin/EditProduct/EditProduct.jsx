@@ -14,6 +14,8 @@ const EditProduct = ({ item, setIsEditOpen }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
+  const [removedImages, setRemovedImages] = useState([]);
+
   const { productEdited, editLoading } = useSelector(
     (state) => state.editProductState,
   );

@@ -43,7 +43,7 @@ const MainHeader = () => {
   }, []);
 
   const { userCart, totalCartPrice } = useSelector(
-    (state) => state.getCartState
+    (state) => state.getCartState,
   );
 
   const { isProductAdded } = useSelector((state) => state.AddToCartState);
@@ -106,7 +106,6 @@ const MainHeader = () => {
                   <span className={`text-[#f8c530] ${isRTL ? "mr-2" : "mr-2"}`}>
                     {t("logo_excellence")}
                   </span>{" "}
-                  {t("logo_furas")}
                 </p>
               </Link>
 

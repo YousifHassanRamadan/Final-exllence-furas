@@ -10,14 +10,14 @@ export const updateProductVariant = createAsyncThunk(
       // إرسال الطلب باستخدام axios
       const response = await axiosClient.put(
         API_ENDPOINTS.ADMIN_ENPOINTS.EDIT_VARIANT,
-        updatedData
+        updatedData,
       );
 
       return response.data; // Returning updated variant data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const variantSlice = createSlice({
@@ -26,6 +26,7 @@ const variantSlice = createSlice({
     isVariantEdited: true,
     success: "idle",
     error: null,
+    loading: false,
   },
   reducers: {
     resetIsVariantEdited: (state) => {
@@ -37,17 +38,20 @@ const variantSlice = createSlice({
     builder
       .addCase(updateProductVariant.pending, (state) => {
         state.success = "loading";
+        state.loading = true;
         // console.log("state.success", state.success);
       })
       .addCase(updateProductVariant.fulfilled, (state, action) => {
         state.success = "success";
         state.isVariantEdited = false;
+        state.loading = false;
         // console.log("state.success", state.success);
       })
       .addCase(updateProductVariant.rejected, (state, action) => {
         state.success = "failed";
         state.isVariantEdited = false;
         state.error = action.payload;
+        state.loading = false;
         // console.log("state.success", state.success);
       });
   },

@@ -14,7 +14,7 @@ const AddVariantForm = ({ item, setActiveForm }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isVariantAdded, loading, error } = useSelector(
-    (state) => state.variantState
+    (state) => state.variantState,
   );
 
   const { isRTL } = useSelector((state) => state.RTLState);
@@ -23,7 +23,7 @@ const AddVariantForm = ({ item, setActiveForm }) => {
 
   const validationSchema = Yup.object({
     color: Yup.string().required(t("color_required")),
-    size: Yup.string().required(t("size_required")),
+    size: Yup.string().nullable(),
     stock: Yup.number().required(t("stock_required")).min(1, t("stock_min")),
     price: Yup.number().required(t("price_required")).min(0, t("price_min")),
   });
@@ -168,7 +168,7 @@ const AddVariantForm = ({ item, setActiveForm }) => {
                 className="absolute -top-1 -right-1 bg-red-500 text-white p-[2px] rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition"
                 onClick={() => {
                   const updatedImages = formik.values.images.filter(
-                    (_, i) => i !== index
+                    (_, i) => i !== index,
                   );
                   formik.setFieldValue("images", updatedImages);
                 }}

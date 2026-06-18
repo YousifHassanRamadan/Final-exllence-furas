@@ -13,9 +13,9 @@ const AccountPage = () => {
     return <LogInAndSignUp />; // Render login page
   }
 
-  useEffect(() => {
-    document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
-  }, [i18n.language]);
+  // useEffect(() => {
+  //   document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
+  // }, [i18n.language]);
 
   return (
     <Container maxWidth="lg" className="min-h-[100vh] my-[7%]">

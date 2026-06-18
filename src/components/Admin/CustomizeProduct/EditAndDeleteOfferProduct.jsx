@@ -19,8 +19,14 @@ const EditAndDeleteOfferProduct = ({ item, setActiveForm }) => {
   const { isRTL } = useSelector((state) => state.RTLState);
 
   const { isOfferEdited, loading, error } = useSelector(
-    (state) => state.editOfferState
+    (state) => state.editOfferState,
   );
+
+  const {
+    isOfferDeleted,
+    loading: deleteOfferLoading,
+    error: deleteOfferError,
+  } = useSelector((state) => state.deleteOfferState);
 
   const validationSchema = Yup.object({
     discountPercentage: Yup.number()
@@ -52,7 +58,7 @@ const EditAndDeleteOfferProduct = ({ item, setActiveForm }) => {
 
       const formattedStartDate = formatDate(
         values.startDate,
-        `${now.getHours()}:${now.getMinutes()}`
+        `${now.getHours()}:${now.getMinutes()}`,
       );
       const formattedEndDate = formatDate(values.endDate, "23:59");
 
@@ -132,8 +138,15 @@ const EditAndDeleteOfferProduct = ({ item, setActiveForm }) => {
           className="text-white bg-red-500 rounded-full p-1 flex justify-center items-center gap-2"
           onClick={handleDeleteOffer}
         >
-          <MdDelete size={24} />
-          {t("delete_offer")}
+          {deleteOfferLoading ? (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+          ) : (
+            <>
+              {" "}
+              <MdDelete size={24} />
+              {t("delete_offer")}
+            </>
+          )}
         </button>
 
         <button

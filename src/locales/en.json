@@ -618,5 +618,7 @@
   "zipCode_digits": "ZIP Code must be 5 numbers",
   "address_deleted_success": "Address deleted successfully",
   "password_changed_successfully": "Password changed successfully!",
-  "password_change_failed": "Password change failed. Please try again."
+  "password_change_failed": "Password change failed. Please try again.",
+  "end_date": "End Date",
+  "start_date": "Start Date"
 }

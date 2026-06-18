@@ -10,30 +10,43 @@ const ProductActions = ({
   handleQuantityChange,
   handleAddToCart,
   handleFavoriteClick,
+  variantStock,
   isLoading,
   isRTL,
 }) => {
   const { t } = useTranslation();
 
+  const isOutOfStock = variantStock <= 0;
+
   return (
     <div>
-      {/* كمية الطلب - مخفية إذا كان المنتج قادماً قريباً */}
+      {/* Quantity selector — hidden if coming soon or out of stock */}
       {isLoading ? (
         <Skeleton width={120} height={40} />
       ) : !product?.comingSoon ? (
         <div className="mt-4 flex items-center">
-          <Typography className={` ${isRTL ? "ml-4" : "mr-4"}`}>
+          <Typography className={`${isRTL ? "ml-4" : "mr-4"}`}>
             {t("quantity")}
           </Typography>
           <ButtonGroup variant="outlined">
-            <Button onClick={() => handleQuantityChange("increase")}>+</Button>
+            <Button
+              onClick={() => handleQuantityChange("increase")}
+              disabled={isOutOfStock}
+            >
+              +
+            </Button>
             <Button disabled>{quantity}</Button>
-            <Button onClick={() => handleQuantityChange("decrease")}>-</Button>
+            <Button
+              onClick={() => handleQuantityChange("decrease")}
+              disabled={quantity <= 1}
+            >
+              -
+            </Button>
           </ButtonGroup>
         </div>
       ) : null}
 
-      {/* أزرار الإضافة - مختلفة إذا كان المنتج قادماً قريباً */}
+      {/* Add to cart / favourite buttons */}
       {isLoading ? (
         <Skeleton width={120} height={40} />
       ) : (
@@ -41,9 +54,14 @@ const ProductActions = ({
           {!product?.comingSoon && (
             <Button
               onClick={() => handleAddToCart(product)}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md"
+              disabled={isOutOfStock}
+              className={`text-white px-6 py-2 rounded-md ${
+                isOutOfStock ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600"
+              }`}
             >
-              {t("add_to_cart")}
+              {isOutOfStock
+                ? t("out_of_stock") || "Out of Stock"
+                : t("add_to_cart")}
             </Button>
           )}
           <Button
@@ -55,7 +73,7 @@ const ProductActions = ({
         </div>
       )}
 
-      {/* Coming Soon - Launch Info Box */}
+      {/* Coming Soon info box */}
       {product?.comingSoon && (
         <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
           <div className="flex items-center gap-2 text-blue-700">

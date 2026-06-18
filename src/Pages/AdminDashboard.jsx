@@ -40,18 +40,18 @@ const AdminDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const [token, setToken] = useState(
-    LocalStorageUtils.getAccessToken() || null
+    LocalStorageUtils.getAccessToken() || null,
   );
 
   const { Allproducts, totalPages } = useSelector(
-    (state) => state.adminProductsState
+    (state) => state.adminProductsState,
   );
 
   const { Allcategories, categoryLoading } =
     useSelector((state) => state.getCategoryState) || [];
 
   const { productEdited, editLoading } = useSelector(
-    (state) => state.editProductState
+    (state) => state.editProductState,
   );
 
   const { categoryAdded } = useSelector((state) => state.addCategoryState);
@@ -59,22 +59,30 @@ const AdminDashboard = () => {
   const { isCategoryEdited } = useSelector((state) => state.editCategoryState);
 
   const { categoryDeleted, error } = useSelector(
-    (state) => state.deleteCategoryState
+    (state) => state.deleteCategoryState,
   );
 
   const { isProductAdded, loading } = useSelector(
-    (state) => state.AdminAddProductState
+    (state) => state.AdminAddProductState,
   );
 
   const { isVariantEdited } = useSelector(
-    (state) => state.editProdVariantState
+    (state) => state.editProdVariantState,
   );
 
   const { isVariantDeleted } = useSelector(
-    (state) => state.deleteProdVariantState
+    (state) => state.deleteProdVariantState,
   );
 
+  const { isDiscountAdded } = useSelector((state) => state.discountState);
+
   const { isVariantAdded } = useSelector((state) => state.variantState);
+
+  const {
+    isOfferDeleted,
+    loading: deleteOfferLoading,
+    error: deleteOfferError,
+  } = useSelector((state) => state.deleteOfferState);
 
   const { productLoading } = useSelector((state) => state.adminProductsState);
 
@@ -91,6 +99,8 @@ const AdminDashboard = () => {
     isVariantEdited,
     isVariantDeleted,
     isVariantAdded,
+    isDiscountAdded,
+    isOfferDeleted,
   ]);
 
   useEffect(() => {
@@ -114,7 +124,7 @@ const AdminDashboard = () => {
         Swal.fire(
           "Failed!",
           "YOu can't delete a category has products",
-          "error"
+          "error",
         );
       } else {
         Swal.fire("Deleted!", "The category has been deleted.", "success");

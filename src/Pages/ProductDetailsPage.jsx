@@ -33,25 +33,28 @@ const ProductDetailsPage = () => {
   const [quantity, setQuantity] = useState(0);
 
   const { product, isLoading } = useSelector(
-    (state) => state.singleProductState
+    (state) => state.singleProductState,
   );
 
   const { userData, isLogged } = useSelector((state) => state.authState);
   const { relatedProducts } = useSelector(
-    (state) => state.relatedProductsState
+    (state) => state.relatedProductsState,
   );
 
   console.log("product from prod details", product);
 
   // Product State
   const [selectedColor, setSelectedColor] = useState(
-    product?.variants[0]?.color || null
+    product?.variants?.[0]?.color || null,
   );
   const [selectedSize, setSelectedSize] = useState(
-    product?.variants[0]?.size || null
+    product?.variants?.[0]?.size || null,
   );
   const [variantPrice, setVariantPrice] = useState(
-    product?.variants[0]?.price || 0
+    product?.variants?.[0]?.price || product?.price || 0,
+  );
+  const [variantStock, setVariantStock] = useState(
+    product?.variants?.[0]?.stock ?? product?.stock ?? 0,
   );
   const [mainImage, setMainImage] = useState("");
   const [variantImg, setVariantImg] = useState(product?.variants?.images || []);
@@ -66,7 +69,8 @@ const ProductDetailsPage = () => {
   const productUrl = window.location.href;
   const productTitle = product?.title;
 
-  // Effects
+  // ─── Effects ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (id) {
       dispatch(fetchSingleProduct(id));
@@ -74,22 +78,31 @@ const ProductDetailsPage = () => {
     }
   }, [dispatch, id]);
 
+  // Initialise state when product loads
   useEffect(() => {
     if (product?.thumbnail) {
       setMainImage(product.thumbnail);
     }
 
-    if (product?.variants) {
-      setSelectedColor(product?.variants[0]?.color || null);
-      setSelectedSize(product?.variants[0]?.size || null);
-      setVariantPrice(product?.variants[0]?.price || 0);
+    if (product?.variants?.length > 0) {
+      setSelectedColor(product.variants[0]?.color || null);
+      setSelectedSize(product.variants[0]?.size || null);
+      setVariantPrice(product.variants[0]?.price || product?.price || 0);
+      setVariantStock(product.variants[0]?.stock ?? product?.stock ?? 0);
+    } else {
+      // CASE: Simple product — no variants at all
+      setSelectedColor(null);
+      setSelectedSize(null);
+      setVariantPrice(product?.price || 0);
+      setVariantStock(product?.stock ?? 0);
     }
   }, [product]);
 
+  // Sync variant images when color changes
   useEffect(() => {
     if (selectedColor) {
       const selectedVariant = product?.variants?.find(
-        (variant) => variant.color === selectedColor
+        (variant) => variant.color === selectedColor,
       );
       if (selectedVariant?.images?.length) {
         setVariantImg(selectedVariant.images);
@@ -99,61 +112,114 @@ const ProductDetailsPage = () => {
     }
   }, [selectedColor, product]);
 
+  // Sync variant PRICE when color or size changes
   useEffect(() => {
-    if (selectedColor && selectedSize) {
-      const selectedVariant = product?.variants?.find(
-        (variant) =>
-          variant.color === selectedColor && variant.size === selectedSize
-      );
+    if (!product) return;
 
-      if (selectedVariant?.price) {
-        setVariantPrice(selectedVariant.price);
+    if (selectedColor) {
+      let selectedVariant;
+
+      if (selectedSize) {
+        // CASE: Color + Size variant
+        selectedVariant = product?.variants?.find(
+          (variant) =>
+            variant.color === selectedColor && variant.size === selectedSize,
+        );
       } else {
-        setVariantPrice(product?.price || 0);
+        // CASE: Color only variant (size is empty string or null)
+        selectedVariant = product?.variants?.find(
+          (variant) => variant.color === selectedColor,
+        );
       }
+
+      setVariantPrice(selectedVariant?.price || product?.price || 0);
+    } else {
+      // CASE: Simple product — no color selected at all
+      setVariantPrice(product?.price || 0);
     }
   }, [selectedColor, selectedSize, product]);
 
-  // Handlers
+  // Sync variant STOCK when color or size changes
+  useEffect(() => {
+    if (!product) return;
+
+    if (selectedColor) {
+      let selectedVariant;
+
+      if (selectedSize) {
+        // CASE: Color + Size variant
+        selectedVariant = product?.variants?.find(
+          (variant) =>
+            variant.color === selectedColor && variant.size === selectedSize,
+        );
+      } else {
+        // CASE: Color only variant
+        selectedVariant = product?.variants?.find(
+          (variant) => variant.color === selectedColor,
+        );
+      }
+
+      setVariantStock(selectedVariant?.stock ?? product?.stock ?? 0);
+    } else {
+      // CASE: Simple product — no color at all → use product-level stock
+      setVariantStock(product?.stock ?? 0);
+    }
+  }, [selectedColor, selectedSize, product]);
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────
+
   const handleAddToCart = (prod) => {
     const token = LocalStorageUtils.getAccessToken();
-
-    const selectedVariant = product?.variants?.find(
-      (variant) =>
-        variant.color === selectedColor && variant.size === selectedSize
-    );
-
-    const availableStock = selectedVariant
-      ? selectedVariant.stock
-      : product.stock;
 
     if (!token) {
       toast.warning("You need to log in first to add products to the cart 🛒");
       return;
     }
 
-    if (quantity > prod.stock && quantity > availableStock) {
-      toast.error(`Only ${prod.stock} items are available in stock!`);
+    const availableStock = variantStock ?? prod?.stock ?? 0;
+
+    if (quantity <= 0) {
+      toast.error("Please select a quantity!");
+      return;
+    }
+
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} items are available in stock!`);
       return;
     }
 
     const addTocartObj = {};
 
-    if (prod.variants.length >= 0) {
-      const selectedVariant = prod.variants.find(
-        (variant) =>
-          variant.color === selectedColor &&
-          variant.size === selectedSize &&
-          variant.price === variantPrice
-      );
+    if (prod?.variants?.length > 0) {
+      let selectedVariant;
+
+      if (selectedSize) {
+        // CASE: Color + Size variant
+        selectedVariant = prod.variants.find(
+          (variant) =>
+            variant.color === selectedColor &&
+            variant.size === selectedSize &&
+            variant.price === variantPrice,
+        );
+      } else {
+        // CASE: Color only variant
+        selectedVariant = prod.variants.find(
+          (variant) => variant.color === selectedColor,
+        );
+      }
 
       if (selectedVariant) {
         addTocartObj.variantId = selectedVariant._id;
         addTocartObj.quantity = quantity;
       } else {
+        // Variant not matched — fall back to product level
         addTocartObj.productId = prod._id;
         addTocartObj.quantity = quantity;
       }
+    } else {
+      // CASE: Simple product — no variants at all
+      addTocartObj.productId = prod._id;
+      addTocartObj.quantity = quantity;
     }
 
     dispatch(addToCartApi([addTocartObj]));
@@ -214,14 +280,7 @@ const ProductDetailsPage = () => {
   };
 
   const handleQuantityChange = (type) => {
-    const selectedVariant = product?.variants?.find(
-      (variant) =>
-        variant.color === selectedColor && variant.size === selectedSize
-    );
-
-    const availableStock = selectedVariant
-      ? selectedVariant.stock
-      : product.stock;
+    const availableStock = variantStock ?? product?.stock ?? 0;
 
     if (type === "increase") {
       if (quantity < availableStock) {
@@ -238,6 +297,8 @@ const ProductDetailsPage = () => {
       }
     }
   };
+
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="container mx-auto my-[10%] px-5">
@@ -256,9 +317,8 @@ const ProductDetailsPage = () => {
           {/* Product Info */}
           <ProductInfo product={product} isLoading={isLoading} isRTL={isRTL} />
 
-          {/* Product Variants */}
-
-          {product?.variants && product?.variants?.length > 0 && (
+          {/* Product Variants — only shown when variants exist */}
+          {product?.variants?.length > 0 && (
             <ProductVariants
               product={product}
               selectedColor={selectedColor}
@@ -272,6 +332,7 @@ const ProductDetailsPage = () => {
           <ProductPricing
             product={product}
             variantPrice={variantPrice}
+            variantStock={variantStock}
             offerPercentage={offerPercentage}
             selectedColor={selectedColor}
             selectedSize={selectedSize}
@@ -286,6 +347,7 @@ const ProductDetailsPage = () => {
             handleQuantityChange={handleQuantityChange}
             handleAddToCart={handleAddToCart}
             handleFavoriteClick={handleFavoriteClick}
+            variantStock={variantStock}
             isLoading={isLoading}
             isRTL={isRTL}
           />

@@ -12,14 +12,14 @@ export const deleteOffer = createAsyncThunk(
         API_ENDPOINTS.ADMIN_ENPOINTS.DELETE_OFFER,
         {
           data: { productId }, // إرسال productId في data
-        }
+        },
       );
 
       return { productId }; // Return deleted product ID
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const offerSlice = createSlice({
@@ -28,6 +28,7 @@ const offerSlice = createSlice({
     isOfferDeleted: false,
     success: "idle",
     error: null,
+    loading: false,
   },
   reducers: {
     resetIsOfferDeleted: (state) => {
@@ -38,15 +39,18 @@ const offerSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(deleteOffer.pending, (state) => {
+        state.loading = true;
         state.success = "loading";
         // console.log("state.success", state.success);
       })
       .addCase(deleteOffer.fulfilled, (state, action) => {
+        state.loading = false;
         state.success = "success";
         state.isOfferDeleted = true;
         // console.log("state.success", state.success);
       })
       .addCase(deleteOffer.rejected, (state, action) => {
+        state.loading = false;
         state.success = "failed";
         state.isOfferDeleted = false;
         state.error = action.payload;

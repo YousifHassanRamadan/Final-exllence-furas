@@ -1,19 +1,22 @@
 import React, { useEffect, useReducer, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchFavorites } from "../reduxSystem/slices/getFavouriteSlice";
 import WishCard from "../components/Ui-Card/WishCard";
 
 const MyWishListPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [searchParams] = useSearchParams();
+
+  const language = searchParams?.get("language") || i18n?.language || "en_US";
 
   const dispatch = useDispatch();
 
   const { isLoading } = useSelector((state) => state.favouriteState);
 
   const { favourites, loading } = useSelector(
-    (state) => state.getFavouritestate
+    (state) => state.getFavouritestate,
   );
 
   // console.log("favourites from wishlist page", favourites);
@@ -64,7 +67,7 @@ const MyWishListPage = () => {
             {t("yourWishlistIsEmpty")}
           </h3>
           <Link
-            to="/product-category/allproducts"
+            to={`/product-category/allproducts?language=${language}`}
             className="mt-6 bg-yellow-500 text-[#284980] py-2 px-4 rounded shadow-md transition duration-200 hover:bg-[#284980] hover:text-white"
           >
             {t("backToShop")}

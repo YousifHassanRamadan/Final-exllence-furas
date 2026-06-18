@@ -35,6 +35,15 @@ export const editProduct = createAsyncThunk(
         });
       }
 
+      // if (
+      //   Array.isArray(product.removedImages) &&
+      //   product.removedImages.length > 0
+      // ) {
+      //   product.removedImages.forEach((url) => {
+      //     formData.append("removedImages", url);
+      //   });
+      // }
+
       // console.log([...formData]);
 
       // إرسال الطلب باستخدام axios
@@ -45,14 +54,14 @@ export const editProduct = createAsyncThunk(
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       return response.data; // ✅ إرجاع البيانات القادمة من السيرفر
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const editProductSlice = createSlice({

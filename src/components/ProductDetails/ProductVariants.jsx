@@ -25,16 +25,25 @@ const ProductVariants = ({
             ].map((color, index) => (
               <button
                 key={index}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  selectedColor === color ? "border-black" : "border-gray-300"
-                }`}
-                style={{ backgroundColor: color.toLowerCase() }}
                 onClick={() => {
                   setSelectedColor(color);
                   setSelectedSize(null);
                 }}
                 disabled={product?.comingSoon}
-              />
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 text-sm font-medium transition-all ${
+                  selectedColor === color
+                    ? "border-[#284980] bg-[#284980]/5 text-[#284980]"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+                }`}
+              >
+                {/* Color swatch dot */}
+                <span
+                  className="w-4 h-4 rounded-full border border-black/10 shrink-0"
+                  style={{ backgroundColor: color.toLowerCase() }}
+                />
+                {/* Color name */}
+                <span>{color}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -43,10 +52,20 @@ const ProductVariants = ({
       {/* الأحجام */}
       {selectedColor && !product?.comingSoon && (
         <div className="mt-4">
-          <Typography className="font-semibold">{t("select_size")}</Typography>
+          {Boolean(
+            product?.variants?.find(
+              (variant) => variant.color === selectedColor && variant.size,
+            ),
+          ) && (
+            <Typography className="font-semibold">
+              {t("select_size")}
+            </Typography>
+          )}
           <div className="flex gap-2 mt-2 flex-wrap">
             {product?.variants
-              ?.filter((variant) => variant.color === selectedColor)
+              ?.filter(
+                (variant) => variant.color === selectedColor && variant.size,
+              )
               .map((variant, index) => (
                 <button
                   key={index}

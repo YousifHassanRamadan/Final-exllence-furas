@@ -18,7 +18,7 @@ const AddOfferForm = ({ item, setActiveForm }) => {
   const { isRTL } = useSelector((state) => state.RTLState);
 
   const { isDiscountAdded, loading, error } = useSelector(
-    (state) => state.discountState
+    (state) => state.discountState,
   );
 
   const validationSchema = Yup.object({
@@ -52,7 +52,7 @@ const AddOfferForm = ({ item, setActiveForm }) => {
       // تنسيق الحقول قبل الإرسال
       const formattedStartDate = formatDate(
         values.startDate,
-        `${now.getHours()}:${now.getMinutes()}`
+        `${now.getHours()}:${now.getMinutes()}`,
       );
       const formattedEndDate = formatDate(values.endDate, "23:59");
 
@@ -121,25 +121,33 @@ const AddOfferForm = ({ item, setActiveForm }) => {
             </div>
           )}
 
-        <input
-          type="date"
-          name="startDate"
-          {...formik.getFieldProps("startDate")}
-          className="border rounded-lg p-2 w-full"
-        />
-        {formik.touched.startDate && formik.errors.startDate && (
-          <div className="text-red-500 text-sm">{formik.errors.startDate}</div>
-        )}
+        <div>
+          <label>{t("start_date")}</label>
+          <input
+            type="date"
+            name="startDate"
+            {...formik.getFieldProps("startDate")}
+            className="border rounded-lg p-2 w-full"
+          />
+          {formik.touched.startDate && formik.errors.startDate && (
+            <div className="text-red-500 text-sm">
+              {formik.errors.startDate}
+            </div>
+          )}
+        </div>
 
-        <input
-          type="date"
-          name="endDate"
-          {...formik.getFieldProps("endDate")}
-          className="border rounded-lg p-2 w-full"
-        />
-        {formik.touched.endDate && formik.errors.endDate && (
-          <div className="text-red-500 text-sm">{formik.errors.endDate}</div>
-        )}
+        <div>
+          <label>{t("end_date")}</label>
+          <input
+            type="date"
+            name="endDate"
+            {...formik.getFieldProps("endDate")}
+            className="border rounded-lg p-2 w-full"
+          />
+          {formik.touched.endDate && formik.errors.endDate && (
+            <div className="text-red-500 text-sm">{formik.errors.endDate}</div>
+          )}
+        </div>
 
         <button
           type="submit"
