@@ -25,7 +25,7 @@ const EditAccountPage = () => {
   const dispatch = useDispatch();
 
   const { isProfileEdited, isEditProfLoading } = useSelector(
-    (state) => state.userSliceState
+    (state) => state.userSliceState,
   );
 
   const passwordState = useSelector((state) => state.changePasswordState || {});
@@ -121,10 +121,19 @@ const EditAccountPage = () => {
     setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
+  const handleVerifyEmail = async () => {
+    try {
+      await dispatch(verifyAccount());
+      toast.success(t("verification_email_sent"));
+    } catch (error) {
+      toast.error(t("failed_to_send_verification_email"));
+    }
+  };
+
   useEffect(() => {
     if (isPasswordSuccess) {
       toast.success(
-        t("password_changed_successfully") || "Password changed successfully!"
+        t("password_changed_successfully") || "Password changed successfully!",
       );
       passwordFormik.resetForm();
       // تنظيف الحالة بعد 3 ثوانٍ
@@ -137,7 +146,7 @@ const EditAccountPage = () => {
       toast.error(
         errorMessage ||
           t("password_change_failed") ||
-          "Failed to change password!"
+          "Failed to change password!",
       );
       // تنظيف الحالة بعد 3 ثوانٍ
       setTimeout(() => {
@@ -155,10 +164,7 @@ const EditAccountPage = () => {
         {!userData?.isConfirmed && (
           <div
             className="verify mt-2 flex items-center cursor-pointer"
-            onClick={() => {
-              dispatch(verifyAccount());
-              toast.success("we sent you a verification email");
-            }}
+            onClick={handleVerifyEmail}
           >
             <MdVerified className=" text-[#F0B100]" />
             <p className=" text-[#F0B100] ml-1">Verify Your Account</p>
@@ -275,7 +281,7 @@ const EditAccountPage = () => {
                 name={field}
                 variant="outlined"
                 placeholder={t(
-                  `enterYour${field.charAt(0).toUpperCase() + field.slice(1)}`
+                  `enterYour${field.charAt(0).toUpperCase() + field.slice(1)}`,
                 )}
                 className="border-[#284980] focus:outline-none focus:ring-0 pr-10"
                 {...passwordFormik.getFieldProps(field)}
@@ -296,7 +302,7 @@ const EditAccountPage = () => {
                   </p>
                 )}
             </div>
-          )
+          ),
         )}
 
         <div className="btn mt-9 flex sm:justify-start justify-center">

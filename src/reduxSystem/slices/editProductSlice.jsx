@@ -29,20 +29,28 @@ export const editProduct = createAsyncThunk(
       }
 
       // ✅ التأكد أن images ليست undefined قبل استخدام forEach
+      // product.images may contain a mix of existing URL strings (kept images)
+      // and new File objects (newly added images). Only the new File objects
+      // need to be uploaded here.
       if (Array.isArray(product.images) && product.images.length > 0) {
         product.images.forEach((image) => {
-          formData.append("images", image);
+          if (image instanceof File) {
+            formData.append("images", image);
+          }
         });
       }
 
-      // if (
-      //   Array.isArray(product.removedImages) &&
-      //   product.removedImages.length > 0
-      // ) {
-      //   product.removedImages.forEach((url) => {
-      //     formData.append("removedImages", url);
-      //   });
-      // }
+      // ✅ مصفوفة الصور التي يجب حذفها من السيرفر/التخزين (Cloudinary/S3/...)
+      // يتم إرسالها كـ JSON string ضمن مفتاح imagesToRemove
+      if (
+        Array.isArray(product.imagesToRemove) &&
+        product.imagesToRemove.length > 0
+      ) {
+        formData.append(
+          "imagesToRemove",
+          JSON.stringify(product.imagesToRemove),
+        );
+      }
 
       // console.log([...formData]);
 

@@ -197,7 +197,7 @@ const ProductCategoryPage = () => {
             disabled={noProducts || currentPage === 1}
             className="px-4 py-2 mx-1 bg-[#284980] text-white rounded disabled:opacity-50 cursor-pointer"
           >
-            <FaArrowLeft />
+            {isRTL ? <FaArrowRight /> : <FaArrowLeft />}
           </button>
           <span className="px-4 py-2">
             {noProducts ? 0 : currentPage} / {noProducts ? 0 : totalPages}
@@ -207,7 +207,7 @@ const ProductCategoryPage = () => {
             disabled={noProducts || currentPage === totalPages}
             className="px-4 py-2 mx-1 bg-[#284980] text-white rounded disabled:opacity-50 cursor-pointer"
           >
-            <FaArrowRight />
+            {isRTL ? <FaArrowLeft /> : <FaArrowRight />}
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}

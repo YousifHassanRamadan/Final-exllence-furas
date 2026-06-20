@@ -1,5 +1,6 @@
 import { IoClose } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
+import { ImagePlus, Upload, X } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -37,6 +38,15 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [variantList, setVariantList] = useState([]);
 
+  // Existing image URLs (already on the server) for the selected variant
+  const [existingImages, setExistingImages] = useState([]);
+  // Newly added File objects for the selected variant
+  const [newImages, setNewImages] = useState([]);
+  // Local preview URLs for newly added files (so we can revoke them later)
+  const [newImagePreviews, setNewImagePreviews] = useState([]);
+  // Existing image URLs the user removed -> sent to backend as imagesToRemove
+  const [imagesToRemove, setImagesToRemove] = useState([]);
+
   useEffect(() => {
     if (item.variants.length >= 2) {
       dispatch(fetchProductVariants(item._id)).then(() => {
@@ -69,6 +79,14 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
     size: Yup.string().nullable(),
   });
 
+  const resetImageState = () => {
+    // free any local blob previews before clearing them
+    newImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    setNewImages([]);
+    setNewImagePreviews([]);
+    setImagesToRemove([]);
+  };
+
   const formik = useFormik({
     initialValues: {
       color: "",
@@ -81,6 +99,8 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
       const updatedVariant = {
         ...values,
         variantId: selectedVariant._id,
+        newImages,
+        imagesToRemove,
       };
 
       try {
@@ -90,6 +110,7 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
           title: "Success",
           text: "Product variant updated successfully",
         });
+        resetImageState();
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -111,7 +132,40 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
         color: selected.color || "",
         size: selected.size || "",
       });
+      setExistingImages(selected.images || []);
+      resetImageState();
     }
+  };
+
+  const handleImagesChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    if (existingImages.length + newImages.length + files.length > 5) {
+      Swal.fire({
+        icon: "warning",
+        title: t("max_5_images") || "Max 5 images allowed",
+      });
+      return;
+    }
+
+    setNewImages((prev) => [...prev, ...files]);
+    setNewImagePreviews((prev) => [
+      ...prev,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ]);
+  };
+
+  const removeExistingImage = (index) => {
+    const removedUrl = existingImages[index];
+    setImagesToRemove((prev) => [...prev, removedUrl]);
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index) => {
+    URL.revokeObjectURL(newImagePreviews[index]);
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    setNewImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleDeleteVariant = (variantId) => {
@@ -130,6 +184,8 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
       }
     });
   };
+
+  console.log("Current variant list:", variantList);
 
   return (
     <div className="relative p-6 bg-white shadow-lg rounded-lg">
@@ -216,17 +272,88 @@ const EditAndDeleteVariantProduct = ({ item, setActiveForm }) => {
               <p className="text-red-500">{formik.errors.size}</p>
             )}
 
+            {/* صور الفاريانت - إضافة وحذف */}
+            {selectedVariant && (
+              <div className="flex flex-col gap-2">
+                <label className="text-[#284980] font-medium">
+                  {t("variant_images") || "Variant Images"}
+                </label>
+
+                <div className="border p-3 rounded-lg flex flex-col items-center relative cursor-pointer">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={handleImagesChange}
+                  />
+                  {existingImages.length > 0 || newImages.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2 w-full">
+                      {existingImages.map((img, index) => (
+                        <div
+                          key={`existing-${index}`}
+                          className="relative w-20 h-20"
+                        >
+                          <img
+                            src={img}
+                            alt={`variant-${index}`}
+                            className="h-20 w-20 object-cover rounded-lg"
+                          />
+                          <X
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 cursor-pointer"
+                            size={16}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeExistingImage(index);
+                            }}
+                          />
+                        </div>
+                      ))}
+                      {newImagePreviews.map((img, index) => (
+                        <div
+                          key={`new-${index}`}
+                          className="relative w-20 h-20"
+                        >
+                          <img
+                            src={img}
+                            alt={`new-variant-${index}`}
+                            className="h-20 w-20 object-cover rounded-lg"
+                          />
+                          <X
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 cursor-pointer"
+                            size={16}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNewImage(index);
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center text-gray-400 py-4">
+                      <ImagePlus size={32} />
+                      <span>{t("upload_images") || "Upload images"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* زر التحديث */}
             <button
               type="submit"
-              className="bg-[#284980] text-white py-2 rounded-lg hover:bg-blue-600 transition w-full"
+              className="bg-[#284980] text-white py-2 rounded-lg hover:bg-blue-600 transition w-full flex items-center justify-center gap-2"
             >
               {editLoading ? (
                 <div>
                   <p>Loading...</p>
                 </div>
               ) : (
-                <span>{t("update_variant")}</span>
+                <>
+                  <Upload size={18} />
+                  <span>{t("update_variant")}</span>
+                </>
               )}
             </button>
           </form>

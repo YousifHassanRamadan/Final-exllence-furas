@@ -30,14 +30,19 @@ export const addVariant = createAsyncThunk(
 
       const response = await axiosClient.post(
         API_ENDPOINTS.ADMIN_ENPOINTS.ADD_VARIANT,
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
       );
 
       return response.data; // إرجاع البيانات القادمة من السيرفر
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     }
-  }
+  },
 );
 
 const variantSlice = createSlice({

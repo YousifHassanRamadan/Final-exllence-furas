@@ -14,7 +14,9 @@ const EditProduct = ({ item, setIsEditOpen }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const [removedImages, setRemovedImages] = useState([]);
+  // URLs of existing images the user removed during this edit session.
+  // Sent to the backend under "imagesToRemove" so it knows what to delete.
+  const [imagesToRemove, setImagesToRemove] = useState([]);
 
   const { productEdited, editLoading } = useSelector(
     (state) => state.editProductState,
@@ -46,7 +48,7 @@ const EditProduct = ({ item, setIsEditOpen }) => {
     stock: `${stock}`,
     category: `${category?.name}`,
     thumbnail: `${thumbnail}`,
-    images: [...images],
+    images: [...images], // mix of existing URL strings + new File objects
     _id: `${_id}`,
     comingSoon: comingSoon,
   });
@@ -99,6 +101,16 @@ const EditProduct = ({ item, setIsEditOpen }) => {
   };
 
   const removeImage = (index) => {
+    const removed = product.images[index];
+
+    // If it's a string, it's an existing image URL already on the server
+    // -> tell the backend to delete it via imagesToRemove.
+    // If it's a File object, it was added locally this session and never
+    // reached the server, so there's nothing to clean up there.
+    if (typeof removed === "string") {
+      setImagesToRemove((prev) => [...prev, removed]);
+    }
+
     setProduct((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
@@ -141,7 +153,7 @@ const EditProduct = ({ item, setIsEditOpen }) => {
     }
 
     try {
-      await dispatch(editProduct(product)).unwrap();
+      await dispatch(editProduct({ ...product, imagesToRemove })).unwrap();
       Swal.fire({ icon: "success", text: t("product_edited_success") });
       setIsEditOpen(false);
     } catch (error) {
